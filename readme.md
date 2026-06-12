@@ -1,4 +1,4 @@
-# Laravel Module
+# Laranest - Laravel with modules
 A simple scaffolding package inspired by NestJs architecture. Each module encapsulates its own controller, requests, and model - keeping your application organized and scalable.
 
 ## Requirements
