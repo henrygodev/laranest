@@ -1,0 +1,66 @@
+<?php
+
+namespace {{namespace}};
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
+
+class {{class}} extends FormRequest
+{
+    /**
+     * Authorize the request.
+     */
+    public function authorize():bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules.
+     */
+    public function rules():array
+    {
+        // Add -> Rule::unique(table_name, identifier)->ignore(id) <- for features
+        return [];
+    }
+
+    /**
+     * Get custom validation messages.
+     */
+    public function messages():array
+    {
+        return [];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        // Code here
+    }
+
+    /**
+     * Prepare data before validation.
+     */
+    public function prepareForValidation(): void
+    {
+        // Code here
+    }
+
+    /**
+     * Handle data after successful validation.
+     */
+    public function passedValidation():void
+    {
+        // Code here
+    }
+
+    /**
+     * Recursively clean request data.
+     */
+    public function deepClean(array $data): array
+    {
+        return [];
+    }
+}

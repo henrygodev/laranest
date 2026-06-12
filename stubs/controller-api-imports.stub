@@ -1,0 +1,4 @@
+use {{model}};
+use {{storeRequest}};
+use {{updateRequest}};
+use Illuminate\Http\JsonResponse; // Optional import

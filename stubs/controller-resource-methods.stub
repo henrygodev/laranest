@@ -1,0 +1,34 @@
+    public function index()
+    {
+        //
+    }
+
+    public function create()
+    {
+        //
+    }
+
+    public function store({{storeRequestClass}} $request)
+    {
+        //
+    }
+
+    public function show({{modelClass}} $model)
+    {
+        //
+    }
+
+    public function edit({{modelClass}} $model)
+    {
+        //
+    }
+
+    public function update({{updateRequestClass}} $request, {{modelClass}} $model)
+    {
+        //
+    }
+
+    public function destroy({{modelClass}} $model)
+    {
+        //
+    }

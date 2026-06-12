@@ -1,0 +1,42 @@
+{
+    "name": "henrygodev/laravel-module",
+    "description": "Laravel module scaffolding package",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "module", "scaffolding", "ddd"],
+    "autoload": {
+        "psr-4": {
+            "Henrygodev\\LaravelModule\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Henrygodev\\LaravelModule\\Tests\\" : "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Henry Garcia",
+            "email": "henry_garcia1996@hotmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+        "illuminate/console": "^8.0|^9.0|^10.0|^11.0|^12.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Henrygodev\\LaravelModule\\LaravelModuleServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "6.x-dev",
+        "phpunit/phpunit": "^9.0|^10.0|^11.0"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testdox"
+    }
+}

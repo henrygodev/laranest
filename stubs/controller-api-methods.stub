@@ -1,0 +1,24 @@
+    public function index(): JsonResponse
+    {
+        return response()->json();
+    }
+
+    public function store({{storeRequestClass}} $request): JsonResponse
+    {
+        return response()->json();
+    }
+
+    public function show({{modelClass}} $model): JsonResponse
+    {
+        return response()->json();
+    }
+
+    public function update({{updateRequestClass}} $request, int $model): JsonResponse
+    {
+        return response()->json();
+    }
+
+    public function destroy({{modelClass}} $model): JsonResponse
+    {
+        return response()->json();
+    }
