@@ -14,6 +14,11 @@ class MakeModuleCommandTest extends TestCase
         parent::setUp();
 
         File::deleteDirectory(app_path('Modules'));
+
+        // Limpiar migraciones generadas por tests anteriores
+        foreach (glob(database_path('migrations/*_create_*_table.php')) as $file) {
+            unlink($file);
+        }
     }
 
     protected function getPackageProviders($app): array
@@ -208,7 +213,10 @@ class MakeModuleCommandTest extends TestCase
     {
         // Publicar un stub
         $publishedDir = base_path("stubs/laravel-module");
-        mkdir($publishedDir, 0755, true);
+
+        if (! is_dir($publishedDir)) {
+            mkdir($publishedDir, 0755, true);
+        }
 
         file_put_contents("{$publishedDir}/model.stub", "<?php\n// CUSTOM STUB\nnamespace {{namespace}};\nclass {{class}} {}");
 
@@ -220,4 +228,67 @@ class MakeModuleCommandTest extends TestCase
         unlink("{$publishedDir}/model.stub");
         rmdir($publishedDir);
     }
+
+    // Migracion
+
+    /**
+     * @test
+    */
+    public function it_migration_is_not_generated_without_flag():void
+    {
+        $this->artisan('make:module', ['name'=> 'Product'])->assertSuccessful();
+
+        $migrations = glob(database_path('migrations/*_create_products_table.php'));
+        $this->assertEmpty($migrations);
+    }
+
+    /**
+     * @test
+     */
+    public function it_generates_migration_with_flag():void
+    {
+        $this->artisan('make:module', ['name'=> 'Product', '--migration' => true])->assertSuccessful();
+        $migrations = glob(database_path('migrations/*_create_products_table.php'));
+        $this->assertNotEmpty($migrations);
+
+        foreach ($migrations as $file) {
+            unlink($file);
+        }
+    }
+
+    /**@test
+     *
+    */
+    public function it_migration_contains_correct_table_name():void
+    {
+        $this->artisan('make:module', ['name'=> 'Product', '--migration' => true])->assertSuccessful();
+        $migrations = glob(database_path('migrations/*_create_products_table.php'));
+        $content = file_get_contents($migrations[0]);
+ 
+        $this->assertStringContainsString('class CreateProductsTable extends Migration', $content);
+        $this->assertStringContainsString("Schema::create('products'", $content);
+        $this->assertStringContainsString("Schema::dropIfExists('products'", $content);
+        
+        foreach ($migrations as $file) {
+            unlink($file);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function it_migration_uses_plural_snake_case_table_name():void
+    {
+        $this->artisan('make:module', ['name'=> 'Product', '--migration' => true])->assertSuccessful();
+        $migrations = glob(database_path('migrations/*_create_products_table.php'));
+        $this->assertNotEmpty($migrations);
+
+        $content = file_get_contents($migrations[0]);
+        $this->assertStringContainsString('CreateProductsTable', $content);
+
+        foreach ($migrations as $file) {
+            unlink($file);
+        }
+    }
+
 }

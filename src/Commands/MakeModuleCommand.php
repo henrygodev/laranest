@@ -4,6 +4,7 @@ namespace Henrygodev\LaravelModule\Commands;
 
 use Exception;
 use Henrygodev\LaravelModule\Generators\ControllerGenerator;
+use Henrygodev\LaravelModule\Generators\MigrationGenerator;
 use Henrygodev\LaravelModule\Generators\ModelGenerator;
 use Henrygodev\LaravelModule\Generators\RequestGenerator;
 use Henrygodev\LaravelModule\ModuleContext;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 
 class MakeModuleCommand extends Command
 {
-    protected $signature = 'make:module {name} {--api : Generate an API controller} {--resource : Generate a resource controller}';
+    protected $signature = 'make:module {name} {--api : Generate an API controller} {--resource : Generate a resource controller} {--m|migration : Generate a migration file}';
 
     protected $description = 'Create a new module';
 
@@ -32,6 +33,10 @@ class MakeModuleCommand extends Command
             new ControllerGenerator($context, $this, $this->options()),
             new RequestGenerator($context, $this),
         ];
+
+        if($this->option('migration')){
+            $generators[] = new MigrationGenerator($context, $this);
+        }
 
         try {
             foreach ($generators as $generator) {

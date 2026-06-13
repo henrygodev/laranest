@@ -9,7 +9,7 @@ A simple scaffolding package inspired by NestJs architecture. Each module encaps
 # Install
 To install via Composer, run
 ```bash
-composer require henrygodev/laravel-module
+composer require henrygodev/laravelnest
 ```
 
 The package is auto-discovery by Laravel - no need to register the service provider manually.
@@ -72,6 +72,26 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $model) { ... }
     public function destroy(Product $model) { ... }
 }
+```
+
+### Migrations
+Generate a migration file in `database/migrations`
+
+```bash
+php artisan make:module Product --migration
+```
+
+Generates:
+
+```
+database/
+    └── migrations/
+        └── 2025_01_01_000000_create_products_table.php
+```
+
+Also combinable with other flags:
+```bash
+php artisan make:module Product --api --migration
 ```
 
 ### Multi-word names
