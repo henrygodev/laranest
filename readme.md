@@ -9,7 +9,7 @@ A simple scaffolding package inspired by NestJs architecture. Each module encaps
 # Install
 To install via Composer, run
 ```bash
-composer require henrygodev/laravelnest
+composer require henrygodev/laranest
 ```
 
 The package is auto-discovery by Laravel - no need to register the service provider manually.
