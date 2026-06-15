@@ -14,8 +14,20 @@ class LaravelModuleServiceProvider extends ServiceProvider{
             ]);
 
             $this->publishes([
-                __DIR__.'/../stubs' => base_path('stubs/laravel-module')
+                __DIR__ . '/../stubs' => base_path('stubs/laravel-module'),
             ], 'laravel-module-stubs');
+
+            $this->publishes([
+                __DIR__ . '/../config/laranest.php' => config_path('laranest.php'),
+            ], 'laravel-module-config');
         }
+    }
+
+    public function register(): void
+    {
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/laranest.php',
+            'laranest'
+        );
     }
 }

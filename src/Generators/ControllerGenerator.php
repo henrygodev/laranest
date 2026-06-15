@@ -5,6 +5,7 @@ namespace Henrygodev\LaravelModule\Generators;
 use Henrygodev\LaravelModule\ModuleContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Override;
 
 class ControllerGenerator extends BaseGenerator
 {
@@ -19,66 +20,81 @@ class ControllerGenerator extends BaseGenerator
         $this->options = $options;
     }
 
+    public static function fromConfig(ModuleContext $context, Command $command, array $config): static
+    {
+        $instace = new static($context, $command);
+        $instace->config = $config;
+        return $instace;
+    }
+
+    public function withOptions(array $options): static
+    {
+        $this->options = $options;
+        return $this;
+    }
+    
     public function generate(): void
     {
         $this->command->info("Creating controller {$this->context->name}");
 
-        $this->createFile(
-            "{$this->context->modulePath}/Controllers/{$this->context->name}Controller.php",
-            $this->context->stubPath("controller.stub"),
-            $this->buildReplacements()
-        );
+        $stubEntry = $this->resolveStubEntry();
+        $className = $this->resolveClassName($stubEntry);
+        $filePath = "{$this->context->modulePath}/{$this->config['path']}/{$className}.php";
 
-        file_put_contents(
-            storage_path('controller-options.log'),
-            json_encode($this->options, JSON_PRETTY_PRINT)
-        );
+        $replacements = $this->buildReplacements($className);
+
+        // Resolve
+        if(! empty($stubEntry['imports_stub'])){
+            $replacements['imports'] = $this->render($this->context->stubPath($stubEntry['imports_stub']), $replacements);
+        }
+
+        if(! empty($stubEntry['methods_stub'])){
+            $replacements['methods'] = $this->render($this->context->stubPath($stubEntry['methods_stub']), $replacements);
+        }
+
+        $this->createFile($filePath, $this->context->stubPath($stubEntry['stub']), $replacements);
     }
 
-    private function buildReplacements(): array
+    /**
+     * Pick the right stub entry based on --api / --resource options.
+     * Fall back to the first stub entry (plain controller) if no option is set
+     */
+    private function resolveStubEntry():array
     {
-        // dd($this->options);
-        $ctx = $this->context;
+        $stubs = $this->config['stubs'] ?? [];
 
-        $replacements = [
-            'namespace'     => $ctx->namespace('Controllers'),
-            'class'         => "{$ctx->name}Controller",
-            'model'         => $ctx->namespace('Models') . "\\{$ctx->name}",
+        if($this->options['api'] ?? false){
+            return collect($stubs)->firstWhere('type', 'api') ?? $stubs[0];
+        }
+        
+        if($this->options['resource'] ?? false){
+            return collect($stubs)->firstWhere('type', 'resource') ?? $stubs[0];
+        }
+        
+        return collect($stubs)->firstWhere('type', 'plain') ?? $stubs[0];
+    }
+
+    private function buildReplacements(string $className): array
+    {
+        $ctx = $this->context;
+        $ns = $this->config['namespace'] ?? 'Controllers';
+
+        // Resolve requests config entry for namespace
+        $requestNs = config('laranest.structure.requests.namespace', 'Requests');
+
+        return [
+            'namespace'     => $ctx->namespace($ns),
+            'class'         => $className,
+            'model'         => $ctx->namespace(config('laranest.structure.models.namespace')) . "\\{$ctx->name}",
             'modelClass'    => $ctx->name,
             'modelVariable' => Str::camel($ctx->name),
-            'storeRequest'  => $ctx->namespace('Requests') . "\\Store{$ctx->name}Request",
-            'updateRequest' => $ctx->namespace('Requests') . "\\Update{$ctx->name}Request",
+            'storeRequest'  => $ctx->namespace($requestNs) . "\\Store{$ctx->name}Request",
+            'updateRequest' => $ctx->namespace($requestNs) . "\\Update{$ctx->name}Request",
             'storeRequestClass'  => "Store{$ctx->name}Request",
             'updateRequestClass' => "Update{$ctx->name}Request",
             'imports'       => '',
             'methods'       => '',
         ];
 
-        if($this->options['api'] ?? false) {
-            $replacements['imports'] = $this->render(
-                $ctx->stubPath("controller-api-imports.stub"),
-                $replacements
-            );
-
-            $replacements['methods'] = $this->render(
-                $ctx->stubPath("controller-api-methods.stub"),
-                $replacements
-            );
-
-        }
-
-        if($this->options['resource'] ?? false) {
-            $replacements['imports'] = $this->render(
-                $ctx->stubPath("controller-api-imports.stub"),
-                $replacements
-            );
-
-            $replacements['methods'] = $this->render(
-                $ctx->stubPath("controller-resource-methods.stub"),
-                $replacements
-            );
-        }
-        
-        return $replacements;
     }
 }

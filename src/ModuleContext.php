@@ -10,18 +10,21 @@ class ModuleContext
     public string $moduleName;
     public string $modulePath;
     public string $basePath;
+    public string $baseNamespace;
 
     public function __construct(
         string $name,
         string $moduleName,
         string $modulePath,
-        string $basePath
+        string $basePath,
+        string $baseNamespace
     )
     {
         $this->name = $name;
         $this->moduleName = $moduleName;
         $this->modulePath = $modulePath;
         $this->basePath = $basePath;
+        $this->baseNamespace = $baseNamespace;
     }
     
     /**
@@ -32,7 +35,13 @@ class ModuleContext
         $name = Str::studly(trim($input));
         $moduleName = Str::pluralStudly($name);
 
-        return new self($name, $moduleName, app_path("Modules/{$moduleName}"), dirname(__DIR__));
+        $modulePath =config('laranest.modules_path', 'Modules');
+        $moduleNamespace =config('laranest.modules_namespace', 'App\\Modules');
+
+        return new self(
+            $name, $moduleName, app_path("{$modulePath}/{$moduleName}"), dirname(__DIR__), "{$moduleNamespace}\\{$moduleName}"
+        );
+
     }
 
     /**
@@ -40,7 +49,8 @@ class ModuleContext
     */
     public function namespace(string $folder): string
     {
-        return "App\\Modules\\{$this->moduleName}\\{$folder}";
+        $folder = str_replace('/', '\\', $folder);
+        return "{$this->baseNamespace}\\{$folder}";
     }
     
     /**
@@ -52,6 +62,6 @@ class ModuleContext
 
         return file_exists($published)
             ? $published
-            : dirname(__DIR__) . "/stubs/{$stub}";
+            : "{$this->basePath}/stubs/{$stub}";
     }
 }

@@ -28,15 +28,7 @@ class MakeModuleCommand extends Command
 
         $this->createDirectories($context);
         
-        $generators = [
-            new ModelGenerator($context, $this),
-            new ControllerGenerator($context, $this, $this->options()),
-            new RequestGenerator($context, $this),
-        ];
-
-        if($this->option('migration')){
-            $generators[] = new MigrationGenerator($context, $this);
-        }
+        $generators = $this->buildGenerators($context);
 
         try {
             foreach ($generators as $generator) {
@@ -51,6 +43,41 @@ class MakeModuleCommand extends Command
         $this->info("Module {$context->moduleName} created successfully");
 
         return self::SUCCESS;
+    }
+
+    private function buildGenerators(ModuleContext $context): array
+    {
+        $generators = [];
+
+        foreach (config('laranest.structure') as $key => $structureConfig) {
+            $generatorClass = $structureConfig['generator'] ?? null;
+
+            if(! $generatorClass || !class_exists($generatorClass)){
+                $this->warn("Skipping unknow generator for '{$key}'.");
+                continue;
+            }
+
+            // Controller
+            if(is_a($generatorClass, ControllerGenerator::class, true)){
+                $generator = $generatorClass::fromConfig($context, $this, $structureConfig);
+                $generators[] = $generator->withOptions($this->options());
+                continue;
+            }
+
+            $generators[] = $generatorClass::fromConfig($context, $this, $structureConfig);
+        }
+
+        if($this->option('migration')){
+            $migrationConfig = config('laranest.migration', [
+                'generator' => MigrationGenerator::class,
+                'stubs'     => [['stubs' => 'migration.stub']],
+            ]);
+
+            $generatorClass = $migrationConfig['generator'] ?? MigrationGenerator::class;
+            $generators[] = $generatorClass::fromConfig($context, $this, $migrationConfig);
+        }
+
+        return $generators;
     }
 
     private function rollback(array $generators, ModuleContext $context): void
@@ -88,13 +115,17 @@ class MakeModuleCommand extends Command
 
     private function createDirectories(ModuleContext $context): void
     {
-        $directories = [
-            $context->modulePath,
-            "{$context->modulePath}/Models",
-            "{$context->modulePath}/Controllers",
-            "{$context->modulePath}/Requests",
-        ];
+        $structure = config('laranest.structure', []);
+
+        $directories = [$context->modulePath];
  
+        foreach ($structure as $entry) {
+            $path = $entry['path'] ?? null;
+            if ($path) {
+                $directories[] = "{$context->modulePath}/{$path}";
+            }
+        }
+
         foreach ($directories as $directory) {
             if (! is_dir($directory)) {
                 mkdir($directory, 0755, true);
