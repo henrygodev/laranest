@@ -14,6 +14,7 @@ class MakeModuleCommandTest extends TestCase
         parent::setUp();
 
         File::deleteDirectory(app_path('Modules'));
+        File::deleteDirectory(app_path('Domain'));
 
         // Limpiar migraciones generadas por tests anteriores
         foreach (glob(database_path('migrations/*_create_*_table.php')) as $file) {
@@ -291,4 +292,82 @@ class MakeModuleCommandTest extends TestCase
         }
     }
 
+    public function test_it_skips_duplicate_migration(): void
+    {
+        $this->artisan('make:module', ['name' => 'Product', '-m' => true])->assertSuccessful();
+        $this->artisan('make:module', ['name' => 'Product', '-m' => true])->assertSuccessful();
+ 
+        $migrations = glob(database_path('migrations/*_create_products_table.php'));
+        $this->assertCount(1, $migrations);
+    }
+ 
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración
+    |--------------------------------------------------------------------------
+    */
+ 
+    public function test_it_uses_custom_modules_path_from_config(): void
+    {
+        config(['laranest.modules_path' => 'Domain']);
+ 
+        $this->artisan('make:module', ['name' => 'Product'])->assertSuccessful();
+ 
+        $this->assertDirectoryExists(app_path('Domain/Products'));
+        $this->assertFileExists(app_path('Domain/Products/Models/Product.php'));
+    }
+ 
+    public function test_it_uses_custom_namespace_from_config(): void
+    {
+        config(['laranest.modules_namespace' => 'App\\Domain']);
+ 
+        $this->artisan('make:module', ['name' => 'Product'])->assertSuccessful();
+ 
+        $content = file_get_contents(app_path('Modules/Products/Models/Product.php'));
+        $this->assertStringContainsString('namespace App\Domain\Products\Models;', $content);
+    }
+ 
+    public function test_it_uses_custom_structure_from_config(): void
+    {
+        config([
+            'laranest.structure' => [
+                'models' => [
+                    'path'      => 'Domain/Entities',
+                    'namespace' => 'Domain/Entities',
+                    'generator' => \Henrygodev\LaravelModule\Generators\ModelGenerator::class,
+                    'stubs'     => [
+                        ['stub' => 'model.stub', 'prefix' => null, 'suffix' => null],
+                    ],
+                ],
+            ],
+        ]);
+ 
+        $this->artisan('make:module', ['name' => 'Product'])->assertSuccessful();
+ 
+        $this->assertFileExists(app_path('Modules/Products/Domain/Entities/Product.php'));
+ 
+        $content = file_get_contents(app_path('Modules/Products/Domain/Entities/Product.php'));
+        $this->assertStringContainsString('namespace App\Modules\Products\Domain\Entities;', $content);
+    }
+ 
+    public function test_custom_generator_in_structure_is_used(): void
+    {
+        config([
+            'laranest.structure.models' => [
+                'path'      => 'Models',
+                'namespace' => 'Models',
+                'generator' => \Henrygodev\LaravelModule\Generators\ModelGenerator::class,
+                'stubs'     => [
+                    ['stub' => 'model.stub', 'prefix' => null, 'suffix' => null],
+                    ['stub' => 'model.stub', 'prefix' => null, 'suffix' => 'Interface'],
+                ],
+            ],
+        ]);
+ 
+        $this->artisan('make:module', ['name' => 'Product'])->assertSuccessful();
+ 
+        $this->assertFileExists(app_path('Modules/Products/Models/Product.php'));
+        $this->assertFileExists(app_path('Modules/Products/Models/ProductInterface.php'));
+    }
 }
