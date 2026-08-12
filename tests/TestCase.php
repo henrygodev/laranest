@@ -2,30 +2,37 @@
 
 namespace Henrygodev\LaravelModule\Tests;
 
+use Henrygodev\LaravelModule\LaravelModuleServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
-abstract class TestCase extends OrchestraTestCase {
-
-    protected function getPackageProviders($app)
+abstract class TestCase extends OrchestraTestCase
+{
+    protected function getPackageProviders($app): array
     {
-        return parent::getPackageProviders($app);
+        return [LaravelModuleServiceProvider::class];
     }
 
     protected function tearDown(): void
     {
-        $modulePath = app_path('Modules');
+        $this->cleanDirectory(app_path('Modules'));
+        $this->cleanDirectory(app_path('Domain'));
 
-        if(is_dir($modulePath)) $this->deleteDirectory($modulePath);
+        parent::tearDown();
     }
 
-    private function deleteDirectory(string $path): void
+    protected function cleanDirectory(string $path): void
     {
-        foreach (scandir($path) as $item) {
-            if($item === '.' || $item === '..') continue;
+        if (! is_dir($path)) {
+            return;
+        }
 
-            $fullPath = "{$path}/{$item}";
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
 
-            is_dir($fullPath) ? $this->deleteDirectory($fullPath): unlink($fullPath);
+        foreach ($iterator as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
         }
 
         rmdir($path);

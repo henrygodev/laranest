@@ -7,13 +7,14 @@ use Henrygodev\LaravelModule\Generators\ControllerGenerator;
 use Henrygodev\LaravelModule\Generators\MigrationGenerator;
 use Henrygodev\LaravelModule\Generators\ModelGenerator;
 use Henrygodev\LaravelModule\Generators\RequestGenerator;
+use Henrygodev\LaravelModule\Generators\ServiceGenerator;
 use Henrygodev\LaravelModule\ModuleContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 class MakeModuleCommand extends Command
 {
-    protected $signature = 'make:module {name} {--api : Generate an API controller} {--resource : Generate a resource controller} {--m|migration : Generate a migration file}';
+    protected $signature = 'make:module {name} {--api : Generate an API controller} {--resource : Generate a resource controller} {--s|service : Generate a service class} {--m|migration : Generate a migration file}';
 
     protected $description = 'Create a new module';
 
@@ -67,6 +68,16 @@ class MakeModuleCommand extends Command
             $generators[] = $generatorClass::fromConfig($context, $this, $structureConfig);
         }
 
+        if($this->option('service')){
+            $serviceConfig = config('laranest.service', [
+                'generator' => ServiceGenerator::class,
+                'stubs'     => [['stub' => 'service.stub', 'prefix' => null, 'suffix' => 'Service']],
+            ]);
+
+            $generatorClass = $serviceConfig['generator'] ?? ServiceGenerator::class;
+            $generators[] = $generatorClass::fromConfig($context, $this, $serviceConfig);
+        }
+
         if($this->option('migration')){
             $migrationConfig = config('laranest.migration', [
                 'generator' => MigrationGenerator::class,
@@ -97,6 +108,7 @@ class MakeModuleCommand extends Command
             "{$context->modulePath}/Models",
             "{$context->modulePath}/Controllers",
             "{$context->modulePath}/Requests",
+            "{$context->modulePath}/Services",
             $context->modulePath
         ];
 
@@ -124,6 +136,17 @@ class MakeModuleCommand extends Command
             if ($path) {
                 $directories[] = "{$context->modulePath}/{$path}";
             }
+        }
+
+        // Optional generators that create their own subdirectory
+        $optionalPaths = [];
+
+        if ($this->option('service')) {
+            $optionalPaths[] = config('laranest.service.path', 'Services');
+        }
+
+        foreach ($optionalPaths as $path) {
+            $directories[] = "{$context->modulePath}/{$path}";
         }
 
         foreach ($directories as $directory) {

@@ -77,24 +77,28 @@ class ControllerGenerator extends BaseGenerator
     private function buildReplacements(string $className): array
     {
         $ctx = $this->context;
-        $ns = $this->config['namespace'] ?? 'Controllers';
+        $ns  = $this->config['namespace'] ?? 'Controllers';
 
-        // Resolve requests config entry for namespace
-        $requestNs = config('laranest.structure.requests.namespace', 'Requests');
+        $requestNs  = config('laranest.structure.requests.namespace', 'Requests');
+        $serviceNs  = config('laranest.service.namespace', 'Services');
+        $withService = $this->options['service'] ?? false;
 
         return [
-            'namespace'     => $ctx->namespace($ns),
-            'class'         => $className,
-            'model'         => $ctx->namespace(config('laranest.structure.models.namespace')) . "\\{$ctx->name}",
-            'modelClass'    => $ctx->name,
-            'modelVariable' => Str::camel($ctx->name),
-            'storeRequest'  => $ctx->namespace($requestNs) . "\\Store{$ctx->name}Request",
-            'updateRequest' => $ctx->namespace($requestNs) . "\\Update{$ctx->name}Request",
+            'namespace'          => $ctx->namespace($ns),
+            'class'              => $className,
+            'modelClass'         => $ctx->name,
+            'modelVariable'      => Str::camel($ctx->name),
+            'moduleVariable'     => Str::camel($ctx->moduleName),
+            'storeRequest'       => $ctx->namespace($requestNs) . "\\Store{$ctx->name}Request",
+            'updateRequest'      => $ctx->namespace($requestNs) . "\\Update{$ctx->name}Request",
             'storeRequestClass'  => "Store{$ctx->name}Request",
             'updateRequestClass' => "Update{$ctx->name}Request",
-            'imports'       => '',
-            'methods'       => '',
+            'service'            => $ctx->namespace($serviceNs) . "\\{$ctx->name}Service",
+            'serviceClass'       => "{$ctx->name}Service",
+            'serviceImport'      => $withService ? "use {$ctx->namespace($serviceNs)}\\{$ctx->name}Service;\n" : '',
+            'constructor'        => $withService ? "    public function __construct(protected {$ctx->name}Service \$service) {}\n" : '',
+            'imports'            => '',
+            'methods'            => '',
         ];
-
     }
 }

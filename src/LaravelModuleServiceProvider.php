@@ -25,9 +25,13 @@ class LaravelModuleServiceProvider extends ServiceProvider{
 
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/laranest.php',
-            'laranest'
-        );
+        $packageConfig = require __DIR__ . '/../config/laranest.php';
+
+        $this->app->booting(function () use ($packageConfig) {
+            $userConfig = $this->app['config']->get('laranest', []);
+            $merged     = array_replace_recursive($packageConfig, $userConfig);
+
+            $this->app['config']->set('laranest', $merged);
+        });
     }
 }
