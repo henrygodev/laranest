@@ -92,13 +92,75 @@ database/
         └── 2025_01_01_000000_create_products_table.php
 ```
 
-Also combinable with other flags:
+Running the command twice with `-m` will skip the migration if one already exists for that table.
+
+### Service layer
+
+Generate a service class responsible for business logic. The controller delegates all work to the service and only handles HTTP responses.
+
 ```bash
-php artisan make:module Product --api --migration
-php artisan make:module Product --resource -m
+php artisan make:module Product --service
+# or
+php artisan make:module Product -s
 ```
 
-Running the command twice with `-m` will skip the migration if one already exists for that table.
+Generates:
+
+```
+app/
+└── Modules/
+    └── Products/
+        └── Services/
+            └── ProductService.php
+```
+
+The service comes with the five standard CRUD methods pre-wired to the module's model:
+
+```php
+class ProductService
+{
+    public function getAll(): mixed { ... }
+    public function findById(int $id): Product { ... }
+    public function create(array $data): Product { ... }
+    public function update(int $id, array $data): Product { ... }
+    public function delete(int $id): void { ... }
+}
+```
+
+When combined with `--api` or `--resource`, the controller is generated with the service injected via constructor and all methods delegating to it:
+
+```bash
+php artisan make:module Product --api --service
+```
+
+```php
+class ProductController extends Controller
+{
+    public function __construct(protected ProductService $service) {}
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(StoreProductRequest $request): JsonResponse
+    {
+        return response()->json($this->service->create($request->validated()), 201);
+    }
+    // ...
+}
+```
+
+Without `--service`, the controller is generated without any constructor injection, keeping it decoupled from the service layer.
+
+### Combining flags
+
+All flags are composable:
+
+```bash
+php artisan make:module Product --api --service --migration
+php artisan make:module Product --resource -s -m
+```
 
 ### Multi-word names
 
@@ -234,6 +296,7 @@ stubs/
     ├── controller-resource-methods.stub
     ├── migration.stub
     ├── model.stub
+    ├── service.stub
     ├── store-request.stub
     └── update-request.stub
 ```
