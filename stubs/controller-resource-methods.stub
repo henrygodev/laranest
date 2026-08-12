@@ -1,3 +1,4 @@
+{{constructor}}
     public function index()
     {
         //
@@ -5,7 +6,7 @@
 
     public function create()
     {
-        //
+        return view('{{moduleVariable}}.create');
     }
 
     public function store({{storeRequestClass}} $request)
@@ -13,22 +14,22 @@
         //
     }
 
-    public function show({{modelClass}} $model)
+    public function show(int $id)
     {
         //
     }
 
-    public function edit({{modelClass}} $model)
+    public function edit(int $id)
     {
         //
     }
 
-    public function update({{updateRequestClass}} $request, {{modelClass}} $model)
+    public function update({{updateRequestClass}} $request, int $id)
     {
         //
     }
 
-    public function destroy({{modelClass}} $model)
+    public function destroy(int $id)
     {
         //
     }

@@ -1,4 +1,3 @@
-use {{model}};
 use {{storeRequest}};
 use {{updateRequest}};
-use Illuminate\Http\JsonResponse; // Optional import
+{{serviceImport}}use Illuminate\Http\JsonResponse;

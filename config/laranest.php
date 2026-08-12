@@ -126,5 +126,29 @@ return [
                 ],
             ],
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Service
+    |--------------------------------------------------------------------------
+    |
+    | Controls the stub used when --service flag is passed.
+    | Generates a service class inside the module's Services/ folder.
+    |
+    */
+    'service' => [
+        'path'      => 'Services',
+        'namespace' => 'Services',
+        'generator' => \Henrygodev\LaravelModule\Generators\ServiceGenerator::class,
+        'stubs'     => [
+            [
+                'stub'   => 'service.stub',
+                'prefix' => null,
+                'suffix' => 'Service',
+            ],
+        ],
     ],
 ];
+
