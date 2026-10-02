@@ -48,8 +48,13 @@ class ControllerGenerator extends BaseGenerator
             $replacements['imports'] = $this->render($this->context->stubPath($stubEntry['imports_stub']), $replacements);
         }
 
-        if(! empty($stubEntry['methods_stub'])){
-            $replacements['methods'] = $this->render($this->context->stubPath($stubEntry['methods_stub']), $replacements);
+        $withService = $this->options['service'] ?? false;
+        $methodsStub = ($withService && ! empty($stubEntry['service_methods_stub']))
+            ? $stubEntry['service_methods_stub']
+            : ($stubEntry['methods_stub'] ?? null);
+
+        if(! empty($methodsStub)){
+            $replacements['methods'] = $this->render($this->context->stubPath($methodsStub), $replacements);
         }
 
         $this->createFile($filePath, $this->context->stubPath($stubEntry['stub']), $replacements);

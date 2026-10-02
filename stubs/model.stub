@@ -9,14 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class {{class}} extends Model
 {
     // use HasFactory, SoftDeletes;
-    use HasFactory;
     
-    protected $guarded = [];
+    // protected $guarded = [];
+
+    // protected $hidden = [];
+
+    // protected $casts = [];
+
+    use HasFactory;
 
     protected $fillable = [];
-
-    protected $hidden = [];
-
-    protected $casts = [];
-
 }
