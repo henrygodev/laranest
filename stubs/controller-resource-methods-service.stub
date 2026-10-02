@@ -1,0 +1,42 @@
+{{constructor}}
+    public function index()
+    {
+        $items = $this->service->getAll();
+        return view('{{moduleVariable}}.index', compact('items'));
+    }
+
+    public function create()
+    {
+        return view('{{moduleVariable}}.create');
+    }
+
+    public function store({{storeRequestClass}} $request)
+    {
+        $this->service->create($request->validated());
+        return redirect()->route('{{moduleVariable}}.index');
+    }
+
+    public function show(int $id)
+    {
+        $item = $this->service->findById($id);
+        return view('{{moduleVariable}}.show', compact('item'));
+    }
+
+    public function edit(int $id)
+    {
+        $item = $this->service->findById($id);
+        return view('{{moduleVariable}}.edit', compact('item'));
+    }
+
+    public function update({{updateRequestClass}} $request, int $id)
+    {
+        $this->service->update($id, $request->validated());
+        return redirect()->route('{{moduleVariable}}.index');
+    }
+
+    public function destroy(int $id)
+    {
+        $this->service->delete($id);
+        return redirect()->route('{{moduleVariable}}.index');
+    }
+

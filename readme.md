@@ -3,8 +3,8 @@ A simple scaffolding package inspired by NestJs architecture. Each module encaps
 
 ## Requirements
 
-- PHP ^7.4 | ^8.0
-- Laravel ^8.0 | ^9.0 | ^10.0 | ^11.0 | ^12.0
+- PHP ^8.1 (8.1, 8.2, 8.3, 8.4+)
+- Laravel ^8.0 | ^9.0 | ^10.0 | ^11.0 | ^12.0 | ^13.0
 
 # Install
 To install via Composer, run
@@ -293,7 +293,9 @@ stubs/
     ├── controller.stub
     ├── controller-api-imports.stub
     ├── controller-api-methods.stub
+    ├── controller-api-methods-service.stub
     ├── controller-resource-methods.stub
+    ├── controller-resource-methods-service.stub
     ├── migration.stub
     ├── model.stub
     ├── service.stub
